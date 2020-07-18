@@ -46,7 +46,13 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // メッセージを作成
+        $task = new Task;
+        $task->content = $request->content;
+        $task->save();
+
+        // トップページへリダイレクトさせる
+        return redirect('/');
     }
 
     /**
