@@ -9,7 +9,7 @@
             <thead>
                 <tr>
                     <th>id</th>
-                    <th>タスク</th>
+                    <th>タスク名</th>
                 </tr>
             </thead>
             <tbody>
