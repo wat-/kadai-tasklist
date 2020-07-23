@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Task;
+use App\User;
 
 class TasksController extends Controller
 {
@@ -14,13 +15,23 @@ class TasksController extends Controller
      */
     public function index()
     {
-        // メッセージ一覧を取得
-        $tasks = Task::all();
+        if (\Auth::check()) { // 認証済みの場合
+            // 認証済みユーザを取得
+            $user = \Auth::user();
 
-        // メッセージ一覧ビューでそれを表示
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+            // ユーザの投稿一覧を作成日時の降順で取得
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->get();
+            // メッセージ一覧ビューでそれを表示
+            return view('tasks.index', [
+                'user' => $user,
+                'tasks' => $tasks,
+            ]);
+        } else {
+            // 認証済みでない場合は空文字を返却
+            return view('tasks.index', [
+                'tasks' => '',
+            ]);
+        }
     }
 
     /**
@@ -51,11 +62,12 @@ class TasksController extends Controller
             'status' => 'required|max:10',
             'content' => 'required|max:255',
         ]);
-        
+
         // メッセージを作成
         $task = new Task;
         $task->status = $request->status;
         $task->content = $request->content;
+        $task->user_id = \Auth::id();
         $task->save();
 
         // トップページへリダイレクトさせる
@@ -70,9 +82,8 @@ class TasksController extends Controller
      */
     public function show($id)
     {
-        // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
-
+        
         // メッセージ詳細ビューでそれを表示
         return view('tasks.show', [
             'task' => $task,
@@ -113,10 +124,14 @@ class TasksController extends Controller
         
        // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
-        // メッセージを更新
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
+        
+        // ログインしたユーザのみ操作可能
+        if (\Auth::id() === $task->user_id) {
+            // メッセージを更新
+            $task->status = $request->status;
+            $task->content = $request->content;
+            $task->save();
+        }
 
         // トップページへリダイレクトさせる
         return redirect('/');
@@ -132,9 +147,13 @@ class TasksController extends Controller
     {
         // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
-        // メッセージを削除
-        $task->delete();
-
+        
+        // ログインしたユーザのみ操作可能
+        if (\Auth::id() === $task->user_id) {
+            // メッセージを削除
+            $task->delete();
+        }
+        
         // トップページへリダイレクトさせる
         return redirect('/');
     }

@@ -36,4 +36,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    
+    /**
+     * このユーザが所有するタスク。
+     */
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }
