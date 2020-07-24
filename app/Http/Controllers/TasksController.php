@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Task;
-use App\User;
 
 class TasksController extends Controller
 {
@@ -83,11 +82,17 @@ class TasksController extends Controller
     public function show($id)
     {
         $task = Task::findOrFail($id);
-        
-        // メッセージ詳細ビューでそれを表示
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+
+        // ログインしたユーザと一致しているか確認
+        if (\Auth::id() === $task->user_id) {
+            // メッセージ詳細ビューでそれを表示
+            return view('tasks.show', [
+                'task' => $task,
+            ]);
+        } else {
+            // トップページへリダイレクトさせる
+            return redirect('/');
+        }
     }
 
     /**
@@ -98,13 +103,22 @@ class TasksController extends Controller
      */
     public function edit($id)
     {
-        // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
 
-        // メッセージ編集ビューでそれを表示
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        // ログインしたユーザと一致しているか確認        
+        if (\Auth::id() === $task->user_id) {    
+            // idの値でメッセージを検索して取得
+            $task = Task::findOrFail($id);
+
+            // メッセージ編集ビューでそれを表示
+            return view('tasks.edit', [
+                'task' => $task,
+            ]);
+        } else {
+            // トップページへリダイレクトさせる
+            return redirect('/');
+        }
+
     }
 
     /**
